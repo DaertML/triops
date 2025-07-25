@@ -1,0 +1,36 @@
+# Example YAML Configuration for LLM Fine-tuning
+
+training:
+  type: "full" # Choose "full" for full fine-tuning or "lora" for LoRA fine-tuning
+  model_name: "roneneldan/TinyStories-33M" # The name of the LLM from Hugging Face Hub
+  output_dir: "./finetuned_model" # Directory to save the trained model/adapters
+  max_train_samples: 1000 # Optional: Maximum number of training samples (only for LoRA), set to null to use all
+
+datasets:
+  - name: "timdettmers/openassistant-guanaco"
+    input_column: "text"
+  - name: "cnn_dailymail"
+    input_column: "article"
+    output_column: "highlights"
+  # - name: "HuggingFaceH4/ultrachat_200k" # Uncomment and configure if needed
+  #   input_column: "messages"
+
+lora_config: # Only applicable if training.type is "lora"
+  r: 16
+  lora_alpha: 32
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"] # Common target modules
+  lora_dropout: 0.05
+  bias: "none" # "none", "all", or "lora_only"
+
+training_arguments: # Common Hugging Face TrainingArguments
+  num_train_epochs: 10
+  per_device_train_batch_size: 32
+  gradient_accumulation_steps: 4
+  learning_rate: 5e-5 # Recommended for LoRA; 5e-5 for full fine-tuning
+  logging_steps: 50
+  save_steps: 200
+  save_total_limit: 1 # Only keep the last N checkpoints
+  gradient_checkpointing: true # Saves memory at the cost of speed
+  dataloader_num_workers: 0 # Number of subprocesses to use for data loading
+  dataloader_pin_memory: false # Whether to pin memory for data loading
+
